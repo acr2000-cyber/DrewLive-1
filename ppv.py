@@ -2,7 +2,8 @@ import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
 from datetime import datetime
-import re 
+import re
+import urllib.parse
 
 API_URL = "https://ppv.to/api/streams"
 
@@ -11,6 +12,9 @@ CUSTOM_HEADERS = [
     '#EXTVLCOPT:http-referrer=https://ppv.to/',
     '#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0'
 ]
+
+# Default User-Agent string used when appending params to the URL
+DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
 
 ALLOWED_CATEGORIES = {
     "24/7 Streams", "Wrestling", "Football", "Basketball", "Baseball",
@@ -26,8 +30,6 @@ CATEGORY_LOGOS = {
     "Baseball": "http://drewlive24.duckdns.org:9000/Logos/Baseball.png",
     "American Football": "http://drewlive24.duckdns.org:9000/Logos/NFL3.png",
     "Combat Sports": "http://drewlive24.duckdns.org:9000/Logos/CombatSports2.png",
-    "Darts": "http://drewlive24.duckdns.org:9000/Logos/Darts.png",
-    "Motorsports": "http://drewlive24.duckdns.org:9000/Logos/Motorsports2.png",
     "Live Now": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png",
     "Ice Hockey": "http://drewlive24.duckdns.org:9000/Logos/Hockey.png",
     "Miscellaneous": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png"
@@ -105,7 +107,7 @@ async def check_m3u8_url(url, referer):
     try:
         origin = "https://" + referer.split('/')[2]
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0",
+            "User-Agent": DEFAULT_UA,
             "Referer": referer,
             "Origin": origin
         }
@@ -230,7 +232,16 @@ async def grab_live_now_from_html(page, base_url="https://ppv.to/"):
     print(f"✅ Found {len(live_now_streams)} 'Live Now' streams")
     return live_now_streams
 
+def _encode_param(value: str) -> str:
+    """Percent-encode a header value for use in the pipe params"""
+    return urllib.parse.quote(value or "", safe='')
+
 def build_m3u(streams, url_map):
+    """
+    Build M3U formatted output compatible with Kodi-style playlist entries.
+    For each stream we append a single best URL followed by pipe-separated,
+    percent-encoded header params: |User-Agent=...&Referer=...&Origin=...
+    """
     lines = ['#EXTM3U url-tvg="https://epgshare01.online/epgshare01/epg_ripper_DUMMY_CHANNELS.xml.gz"']
     seen_names = set()
     for s in streams:
@@ -266,10 +277,25 @@ def build_m3u(streams, url_map):
                         matched_team = team
                         break
 
+        # Pick the first available URL
         url = next(iter(urls))
+
+        # Build the pipe-appended, percent-encoded header params
+        try:
+            referer = s.get("iframe") or ""
+            origin = "https://" + referer.split('/')[2] if referer else "https://ppv.to"
+        except Exception:
+            origin = "https://ppv.to"
+
+        ua_enc = _encode_param(DEFAULT_UA)
+        ref_enc = _encode_param(referer)
+        origin_enc = _encode_param(origin)
+
+        param_str = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
+
         lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        lines.extend(CUSTOM_HEADERS)
-        lines.append(url)
+        # append the single URL with the pipe-encoded header params (Kodi-style)
+        lines.append(f'{url}{param_str}')
     return "\n".join(lines)
 
 async def main():
