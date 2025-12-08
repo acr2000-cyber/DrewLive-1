@@ -1,5 +1,3 @@
 #EXTM3U url-tvg="https://epgshare01.online/epgshare01/epg_ripper_DUMMY_CHANNELS.xml.gz"
-#EXTINF:-1 tvg-id="NFL.Dummy.us" tvg-logo="https://api.ppv.to/assets/thumb/b81de749344645209b90492c795620e1-thumbnail.jpg" group-title="PPVLand - NFL Action",NFL RedZone
-https://gg.poocloud.in/redzone/tracks-v1a1/mono.ts.m3u8|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%3B%20rv%3A143.0%29%20Gecko%2F20100101%20Firefox%2F143.0&Referer=https%3A%2F%2Fplayembed.top%2Fembed%2Fnfl-redzone-wk14&Origin=https%3A%2F%2Fplayembed.top
-#EXTINF:-1 tvg-id="Soccer.Dummy.us" tvg-logo="https://api.ppv.to/assets/thumb/7474a99937f923382d44be84c63d9f57-thumbnail.jpg" group-title="PPVLand - Global Football Streams",Real Madrid vs. Celta
-https://gg.poocloud.in/ll_rma/tracks-v1a1/mono.ts.m3u8|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%3B%20rv%3A143.0%29%20Gecko%2F20100101%20Firefox%2F143.0&Referer=https%3A%2F%2Fplayembed.top%2Fembed%2Flaliga%2F2025-12-07%2Frma-cel&Origin=https%3A%2F%2Fplayembed.top
+#EXTINF:-1 tvg-id="NFL.Dummy.us" tvg-logo="https://api.ppv.to/assets/thumb/06fc73eff1b5808e650d244ba7d1ebff-thumbnail.jpg" group-title="PPVLand - NFL Action",Houston Texans vs. Kansas City Chiefs
+https://gg.poocloud.in/kansascitychiefs/index.m3u8|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%3B%20rv%3A143.0%29%20Gecko%2F20100101%20Firefox%2F143.0&Referer=https%3A%2F%2Fplayembed.top%2Fembed%2Fnfl%2F2025-12-07%2Fhou-kc&Origin=https%3A%2F%2Fplayembed.top
