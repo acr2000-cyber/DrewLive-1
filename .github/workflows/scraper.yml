@@ -27,7 +27,7 @@ jobs:
         run: python ppv_scraper.py
       
       - name: Upload playlist
-        uses: actions/upload-artifact@v3  # Keep v3 but use correct syntax
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: PPVLand-playlist
           path: PPVLand.m3u8
