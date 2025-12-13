@@ -1,0 +1,41 @@
+name: PPV Stream Scraper
+
+on:
+  schedule:
+    - cron: '0 */1 * * *'  # Run every 6 hours
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright aiohttp
+          playwright install firefox
+          playwright install-deps
+      
+      - name: Run scraper
+        run: python ppv_scraper.py
+      
+      - name: Upload playlist
+        uses: actions/upload-artifact@v3
+        with:
+          name: PPVLand-playlist
+          path: PPVLand.m3u8
+      
+      - name: Commit and push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add PPVLand.m3u8
+          git commit -m "Update PPVLand.m3u8 - $(date)" || echo "No changes"
+          git push
