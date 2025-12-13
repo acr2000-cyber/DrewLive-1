@@ -2,7 +2,7 @@ name: PPV Stream Scraper
 
 on:
   schedule:
-    - cron: '0 */1 * * *'  # Run every 6 hours
+    - cron: '0 */6 * * *'  # Run every 6 hours
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4  # Updated to v4
       
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,7 +27,7 @@ jobs:
         run: python ppv_scraper.py
       
       - name: Upload playlist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3  # Keep v3 but use correct syntax
         with:
           name: PPVLand-playlist
           path: PPVLand.m3u8
