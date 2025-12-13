@@ -105,7 +105,7 @@ async def check_m3u8_url(url, referer):
         return True
 
     try:
-        origin = "https://" + referer.split('/')[2]
+        origin = "https://" + referer.split('/')
         headers = {
             "User-Agent": DEFAULT_UA,
             "Referer": referer,
@@ -149,21 +149,20 @@ async def grab_m3u8_from_iframe(page, iframe_url):
     page.on("response", handle_response)
     print(f"🌐 Navigating to iframe: {iframe_url}")
     try:
-        await page.goto(iframe_url, timeout=40000, wait_until="domcontentloaded") 
+        await page.goto(iframe_url, timeout=90000, wait_until="networkidle") 
     except Exception as e:
         print(f"❌ Failed to load iframe page: {e}")
         page.remove_listener("response", handle_response)
         return set()
 
     try:
-        await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(5000)
         nested_iframe = page.locator("iframe")
         
         if await nested_iframe.count() > 0:
             print("🔎 Found nested iframe, attempting to click inside it.")
             await page.mouse.click(200, 200) 
             print("✅ Mouse click dispatched on page center to trigger nested player.")
-            
         else:
             print("🖱️ No nested iframe found. Clicking center of page body.")
             await page.mouse.click(200, 200)
@@ -171,17 +170,16 @@ async def grab_m3u8_from_iframe(page, iframe_url):
     except Exception as e:
         print(f"⚠️ Clicking failed, but proceeding anyway. Error: {e}")
 
-    print("⏳ Waiting for stream to be requested (max 10s)...")
+    print("⏳ Waiting for stream to be requested (max 15s)...")
     try:
         await page.wait_for_event(
             "response",
             lambda resp: ".m3u8" in resp.url,
-            timeout=10000 
+            timeout=15000 
         )
         print("✅ M3U8 stream detected. Proceeding immediately to validation.")
-
     except PlaywrightTimeoutError:
-        print("⚠️ Stream request did not start within 10 seconds. Proceeding to validation.")
+        print("⚠️ Stream request did not start within 15 seconds. Proceeding to validation.")
     except Exception as e:
         print(f"❌ Failed during wait for M3U8 event: {e}")
 
@@ -283,7 +281,7 @@ def build_m3u(streams, url_map):
         # Build the pipe-appended, percent-encoded header params
         try:
             referer = s.get("iframe") or ""
-            origin = "https://" + referer.split('/')[2] if referer else "https://ppv.to"
+            origin = "https://" + referer.split('/') if referer else "https://ppv.to"
         except Exception:
             origin = "https://ppv.to"
 
@@ -335,8 +333,19 @@ async def main():
     streams = deduped_streams
 
     async with async_playwright() as p:
-        browser = await p.firefox.launch(headless=True)
-        context = await browser.new_context()
+        browser = await p.firefox.launch(
+            headless=True,
+            firefox_user_prefs={
+                "media.autoplay.default": 0,
+                "media.autoplay.blocking_policy": 0
+            }
+        )
+        context = await browser.new_context(
+            viewport={'width': 1920, 'height': 1080},
+            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0',
+            locale='en-US',
+            timezone_id='America/New_York'
+        )
         page = await context.new_page()
         url_map = {}
 
@@ -344,22 +353,40 @@ async def main():
         for idx, s in enumerate(streams, start=1):
             key = f"{s['name']}::{s['category']}::{s['iframe']}"
             print(f"\n🔎 Scraping stream {idx}/{total_streams}: {s['name']} ({s['category']})")
-            urls = await grab_m3u8_from_iframe(page, s["iframe"])
-            if urls:
-                print(f"✅ Got {len(urls)} stream(s) for {s['name']} ({idx}/{total_streams})")
-            else:
-                print(f"⚠️ No valid streams for {s['name']} ({idx}/{total_streams})")
-            url_map[key] = urls
+            try:
+                urls = await grab_m3u8_from_iframe(page, s["iframe"])
+                if urls:
+                    print(f"✅ Got {len(urls)} stream(s) for {s['name']} ({idx}/{total_streams})")
+                    url_map[key] = urls
+                else:
+                    print(f"⚠️ No valid streams for {s['name']} ({idx}/{total_streams})")
+                    url_map[key] = set()
+            except Exception as e:
+                print(f"❌ Critical error for {s['name']}: {e}")
+                url_map[key] = set()
+            finally:
+                if idx < total_streams:
+                    await asyncio.sleep(2)  # Delay between requests to avoid rate limiting
 
         live_now_streams = await grab_live_now_from_html(page)
         for s in live_now_streams:
             key = f"{s['name']}::{s['category']}::{s['iframe']}"
-            urls = await grab_m3u8_from_iframe(page, s["iframe"])
-            if urls:
-                print(f"✅ Got {len(urls)} 'Live Now' stream(s) for {s['name']}")
-            else:
-                print(f"⚠️ No valid 'Live Now' streams for {s['name']}")
-            url_map[key] = urls
+            print(f"\n🔎 Scraping 'Live Now' stream {idx+1}/{total_streams}: {s['name']} ({s['category']})")
+            try:
+                urls = await grab_m3u8_from_iframe(page, s["iframe"])
+                if urls:
+                    print(f"✅ Got {len(urls)} 'Live Now' stream(s) for {s['name']}")
+                    url_map[key] = urls
+                else:
+                    print(f"⚠️ No valid 'Live Now' streams for {s['name']}")
+                    url_map[key] = set()
+            except Exception as e:
+                print(f"❌ Critical error for {s['name']}: {e}")
+                url_map[key] = set()
+            finally:
+                if idx < total_streams:
+                    await asyncio.sleep(2)  # Delay between requests to avoid rate limiting
+
         streams.extend(live_now_streams)
 
         await browser.close()
