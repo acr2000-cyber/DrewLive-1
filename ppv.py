@@ -2,8 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
 from datetime import datetime
-import re
-import urllib.parse
+import re 
 
 API_URL = "https://ppv.to/api/streams"
 
@@ -12,9 +11,6 @@ CUSTOM_HEADERS = [
     '#EXTVLCOPT:http-referrer=https://ppv.to/',
     '#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0'
 ]
-
-# Default User-Agent string used when appending params to the URL
-DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
 
 ALLOWED_CATEGORIES = {
     "24/7 Streams", "Wrestling", "Football", "Basketball", "Baseball",
@@ -30,6 +26,8 @@ CATEGORY_LOGOS = {
     "Baseball": "http://drewlive24.duckdns.org:9000/Logos/Baseball.png",
     "American Football": "http://drewlive24.duckdns.org:9000/Logos/NFL3.png",
     "Combat Sports": "http://drewlive24.duckdns.org:9000/Logos/CombatSports2.png",
+    "Darts": "http://drewlive24.duckdns.org:9000/Logos/Darts.png",
+    "Motorsports": "http://drewlive24.duckdns.org:9000/Logos/Motorsports2.png",
     "Live Now": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png",
     "Ice Hockey": "http://drewlive24.duckdns.org:9000/Logos/Hockey.png",
     "Miscellaneous": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png"
@@ -107,7 +105,7 @@ async def check_m3u8_url(url, referer):
     try:
         origin = "https://" + referer.split('/')[2]
         headers = {
-            "User-Agent": DEFAULT_UA,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0",
             "Referer": referer,
             "Origin": origin
         }
@@ -138,9 +136,7 @@ async def get_streams():
         print(f"❌ Error in get_streams: {str(e)}")
         return None
 
-
-        
-          async def grab_m3u8_from_iframe(page, iframe_url):
+async def grab_m3u8_from_iframe(page, iframe_url):
     found_streams = set()
     
     def handle_response(response):
@@ -150,68 +146,42 @@ async def get_streams():
 
     page.on("response", handle_response)
     print(f"🌐 Navigating to iframe: {iframe_url}")
-    
     try:
-        # Try loading with domcontentloaded first (faster)
-        await page.goto(iframe_url, timeout=90000, wait_until="domcontentloaded")
-        print("✅ Page loaded (domcontentloaded)")
+        await page.goto(iframe_url, timeout=40000, wait_until="domcontentloaded") 
     except Exception as e:
         print(f"❌ Failed to load iframe page: {e}")
         page.remove_listener("response", handle_response)
         return set()
 
-    # Wait longer for dynamic content
     try:
-        await page.wait_for_timeout(8000)  # Increased from 5000
-        
-        # Try multiple click locations to trigger the player
-        click_positions = [
-            (200, 200),   # Center-left
-            (400, 300),   # Center
-            (600, 400),   # Center-right
-            (300, 250),   # Alternative center
-        ]
-        
+        await page.wait_for_timeout(3000)
         nested_iframe = page.locator("iframe")
         
         if await nested_iframe.count() > 0:
-            print(f"🔎 Found {await nested_iframe.count()} nested iframe(s)")
-            # Try clicking multiple positions
-            for x, y in click_positions:
-                try:
-                    await page.mouse.click(x, y)
-                    print(f"✅ Clicked at position ({x}, {y})")
-                    await asyncio.sleep(1)  # Wait between clicks
-                except Exception as e:
-                    print(f"⚠️ Click at ({x}, {y}) failed: {e}")
+            print("🔎 Found nested iframe, attempting to click inside it.")
+            await page.mouse.click(200, 200) 
+            print("✅ Mouse click dispatched on page center to trigger nested player.")
+            
         else:
-            print("🖱️ No nested iframe found. Clicking multiple positions on page body.")
-            for x, y in click_positions:
-                try:
-                    await page.mouse.click(x, y)
-                    print(f"✅ Clicked at position ({x}, {y})")
-                    await asyncio.sleep(1)
-                except Exception as e:
-                    print(f"⚠️ Click at ({x}, {y}) failed: {e}")
+            print("🖱️ No nested iframe found. Clicking center of page body.")
+            await page.mouse.click(200, 200)
             
     except Exception as e:
-        print(f"⚠️ Interaction failed, but proceeding anyway. Error: {e}")
+        print(f"⚠️ Clicking failed, but proceeding anyway. Error: {e}")
 
-    print("⏳ Waiting for stream to be requested (max 25s)...")
+    print("⏳ Waiting for stream to be requested (max 10s)...")
     try:
         await page.wait_for_event(
             "response",
             lambda resp: ".m3u8" in resp.url,
-            timeout=25000  # Increased from 15000
+            timeout=10000 
         )
         print("✅ M3U8 stream detected. Proceeding immediately to validation.")
+
     except PlaywrightTimeoutError:
-        print("⚠️ Stream request did not start within 25 seconds. Checking for streams anyway...")
+        print("⚠️ Stream request did not start within 10 seconds. Proceeding to validation.")
     except Exception as e:
         print(f"❌ Failed during wait for M3U8 event: {e}")
-
-    # Give it a bit more time to capture any late-loading streams
-    await asyncio.sleep(3)
 
     page.remove_listener("response", handle_response)
 
@@ -260,16 +230,7 @@ async def grab_live_now_from_html(page, base_url="https://ppv.to/"):
     print(f"✅ Found {len(live_now_streams)} 'Live Now' streams")
     return live_now_streams
 
-def _encode_param(value: str) -> str:
-    """Percent-encode a header value for use in the pipe params"""
-    return urllib.parse.quote(value or "", safe='')
-
 def build_m3u(streams, url_map):
-    """
-    Build M3U formatted output compatible with Kodi-style playlist entries.
-    For each stream we append a single best URL followed by pipe-separated,
-    percent-encoded header params: |User-Agent=...&Referer=...&Origin=...
-    """
     lines = ['#EXTM3U url-tvg="https://epgshare01.online/epgshare01/epg_ripper_DUMMY_CHANNELS.xml.gz"']
     seen_names = set()
     for s in streams:
@@ -305,25 +266,10 @@ def build_m3u(streams, url_map):
                         matched_team = team
                         break
 
-        # Pick the first available URL
         url = next(iter(urls))
-
-        # Build the pipe-appended, percent-encoded header params
-        try:
-            referer = s.get("iframe") or ""
-            origin = "https://" + referer.split('/')[2] if referer else "https://ppv.to"
-        except Exception:
-            origin = "https://ppv.to"
-
-        ua_enc = _encode_param(DEFAULT_UA)
-        ref_enc = _encode_param(referer)
-        origin_enc = _encode_param(origin)
-
-        param_str = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
-
         lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        # append the single URL with the pipe-encoded header params (Kodi-style)
-        lines.append(f'{url}{param_str}')
+        lines.extend(CUSTOM_HEADERS)
+        lines.append(url)
     return "\n".join(lines)
 
 async def main():
