@@ -138,7 +138,9 @@ async def get_streams():
         print(f"❌ Error in get_streams: {str(e)}")
         return None
 
-async def grab_m3u8_from_iframe(page, iframe_url):
+
+        
+          async def grab_m3u8_from_iframe(page, iframe_url):
     found_streams = set()
     
     def handle_response(response):
@@ -148,42 +150,68 @@ async def grab_m3u8_from_iframe(page, iframe_url):
 
     page.on("response", handle_response)
     print(f"🌐 Navigating to iframe: {iframe_url}")
+    
     try:
-        await page.goto(iframe_url, timeout=40000, wait_until="domcontentloaded") 
+        # Try loading with domcontentloaded first (faster)
+        await page.goto(iframe_url, timeout=90000, wait_until="domcontentloaded")
+        print("✅ Page loaded (domcontentloaded)")
     except Exception as e:
         print(f"❌ Failed to load iframe page: {e}")
         page.remove_listener("response", handle_response)
         return set()
 
+    # Wait longer for dynamic content
     try:
-        await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(8000)  # Increased from 5000
+        
+        # Try multiple click locations to trigger the player
+        click_positions = [
+            (200, 200),   # Center-left
+            (400, 300),   # Center
+            (600, 400),   # Center-right
+            (300, 250),   # Alternative center
+        ]
+        
         nested_iframe = page.locator("iframe")
         
         if await nested_iframe.count() > 0:
-            print("🔎 Found nested iframe, attempting to click inside it.")
-            await page.mouse.click(200, 200) 
-            print("✅ Mouse click dispatched on page center to trigger nested player.")
-            
+            print(f"🔎 Found {await nested_iframe.count()} nested iframe(s)")
+            # Try clicking multiple positions
+            for x, y in click_positions:
+                try:
+                    await page.mouse.click(x, y)
+                    print(f"✅ Clicked at position ({x}, {y})")
+                    await asyncio.sleep(1)  # Wait between clicks
+                except Exception as e:
+                    print(f"⚠️ Click at ({x}, {y}) failed: {e}")
         else:
-            print("🖱️ No nested iframe found. Clicking center of page body.")
-            await page.mouse.click(200, 200)
+            print("🖱️ No nested iframe found. Clicking multiple positions on page body.")
+            for x, y in click_positions:
+                try:
+                    await page.mouse.click(x, y)
+                    print(f"✅ Clicked at position ({x}, {y})")
+                    await asyncio.sleep(1)
+                except Exception as e:
+                    print(f"⚠️ Click at ({x}, {y}) failed: {e}")
             
     except Exception as e:
-        print(f"⚠️ Clicking failed, but proceeding anyway. Error: {e}")
+        print(f"⚠️ Interaction failed, but proceeding anyway. Error: {e}")
 
-    print("⏳ Waiting for stream to be requested (max 10s)...")
+    print("⏳ Waiting for stream to be requested (max 25s)...")
     try:
         await page.wait_for_event(
             "response",
             lambda resp: ".m3u8" in resp.url,
-            timeout=10000 
+            timeout=25000  # Increased from 15000
         )
         print("✅ M3U8 stream detected. Proceeding immediately to validation.")
-
     except PlaywrightTimeoutError:
-        print("⚠️ Stream request did not start within 10 seconds. Proceeding to validation.")
+        print("⚠️ Stream request did not start within 25 seconds. Checking for streams anyway...")
     except Exception as e:
         print(f"❌ Failed during wait for M3U8 event: {e}")
+
+    # Give it a bit more time to capture any late-loading streams
+    await asyncio.sleep(3)
 
     page.remove_listener("response", handle_response)
 
