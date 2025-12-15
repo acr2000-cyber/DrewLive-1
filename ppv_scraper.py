@@ -98,47 +98,7 @@ COLLEGE_TEAMS = {
     "arizona state sun devils", "texas tech red raiders", "florida atlantic owls"
 }
 
-async def check_m3u8_url(url, referer):
-    """Checks the M3U8 URL using the correct referer for validation."""
-    
-    if "gg.poocloud.in" in url:
-        return True
-
-    try:
-        origin = "https://" + referer.split('/')
-        headers = {
-            "User-Agent": DEFAULT_UA,
-            "Referer": referer,
-            "Origin": origin
-        }
-        timeout = aiohttp.ClientTimeout(total=15)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url, headers=headers) as resp:
-                return resp.status in [200, 403]
-    except Exception as e:
-        print(f"❌ Error checking {url}: {e}")
-        return False
-
-async def get_streams():
-    try:
-        timeout = aiohttp.ClientTimeout(total=30)
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0'
-        }
-        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
-            print(f"🌐 Fetching streams from {API_URL}")
-            async with session.get(API_URL) as resp:
-                print(f"🔍 Response status: {resp.status}")
-                if resp.status != 200:
-                    error_text = await resp.text()
-                    print(f"❌ Error response: {error_text[:500]}")
-                    return None
-                return await resp.json()
-    except Exception as e:
-        print(f"❌ Error in get_streams: {str(e)}")
-        return None
-
-    async def grab_m3u8_from_iframe(page, iframe_url):
+async def grab_m3u8_from_iframe(page, iframe_url):
         found_streams = set()
     
     def handle_response(response):
@@ -229,6 +189,48 @@ async def get_streams():
             
     return valid_urls
 
+
+async def check_m3u8_url(url, referer):
+    """Checks the M3U8 URL using the correct referer for validation."""
+    
+    if "gg.poocloud.in" in url:
+        return True
+
+    try:
+        origin = "https://" + referer.split('/')
+        headers = {
+            "User-Agent": DEFAULT_UA,
+            "Referer": referer,
+            "Origin": origin
+        }
+        timeout = aiohttp.ClientTimeout(total=15)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url, headers=headers) as resp:
+                return resp.status in [200, 403]
+    except Exception as e:
+        print(f"❌ Error checking {url}: {e}")
+        return False
+
+async def get_streams():
+    try:
+        timeout = aiohttp.ClientTimeout(total=30)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0'
+        }
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+            print(f"🌐 Fetching streams from {API_URL}")
+            async with session.get(API_URL) as resp:
+                print(f"🔍 Response status: {resp.status}")
+                if resp.status != 200:
+                    error_text = await resp.text()
+                    print(f"❌ Error response: {error_text[:500]}")
+                    return None
+                return await resp.json()
+    except Exception as e:
+        print(f"❌ Error in get_streams: {str(e)}")
+        return None
+
+    
 async def grab_live_now_from_html(page, base_url="https://ppv.to/"):
     print("🌐 Scraping 'Live Now' streams from HTML...")
     live_now_streams = []
