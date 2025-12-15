@@ -110,9 +110,11 @@ async def grab_m3u8_from_iframe(page, iframe_url):
     print(f"🌐 Navigating to iframe: {iframe_url}")
     
     try:
-        # Try loading with domcontentloaded first (faster)
-        await page.goto(iframe_url, timeout=90000, wait_until="domcontentloaded")
+        # Try loading with domcontentloaded first (faster) - increased timeout to 120s
+        await page.goto(iframe_url, timeout=120000, wait_until="domcontentloaded")
         print("✅ Page loaded (domcontentloaded)")
+        # Add small delay after loading
+        await asyncio.sleep(3)
     except Exception as e:
         print(f"❌ Failed to load iframe page: {e}")
         page.remove_listener("response", handle_response)
@@ -188,8 +190,6 @@ async def grab_m3u8_from_iframe(page, iframe_url):
             print(f"🗑️ Discarding invalid or unreachable URL: {url}")
             
     return valid_urls
-
-
 async def check_m3u8_url(url, referer):
     """Checks the M3U8 URL using the correct referer for validation."""
     
