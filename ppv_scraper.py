@@ -259,21 +259,7 @@ def build_m3u(streams, url_map):
         logo = s.get("poster") or CATEGORY_LOGOS.get(orig_category, "http://drewlive24.duckdns.org:9000/Logos/Default.png")
         tvg_id = CATEGORY_TVG_IDS.get(orig_category, "Misc.Dummy.us")
 
-        if orig_category == "American Football":
-            matched_team = None
-            for team in NFL_TEAMS:
-                if team in name_lower:
-                    tvg_id = "NFL.Dummy.us"
-                    final_group = "PPVLand - NFL Action"
-                    matched_team = team
-                    break
-            if not matched_team:
-                for team in COLLEGE_TEAMS:
-                    if team in name_lower:
-                        tvg_id = "NCAA.Football.Dummy.us"
-                        final_group = "PPVLand - College Football"
-                        matched_team = team
-                        break
+        
 
         # Pick the first available URL
         url = next(iter(urls))
