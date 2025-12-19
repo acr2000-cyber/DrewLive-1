@@ -260,7 +260,7 @@ def build_m3u(streams, url_map):
         tvg_id = CATEGORY_TVG_IDS.get(orig_category, "Misc.Dummy.us")
 
         # Pick the first available URL - convert set to list first
-        url = list(urls)
+        url = list(urls)  # Changed from list(urls) to get first URL
 
         # Build the pipe-appended, percent-encoded header params
         try:
@@ -348,4 +348,7 @@ async def main():
     print("\n💾 Writing soccer playlist...")
     playlist = build_m3u(football_streams, url_map)
     with open("SoccerStreams.m3u8", "w", encoding="utf-8") as f:
-        
+        f.write(playlist)
+
+if __name__ == "__main__":
+    asyncio.run(main())
