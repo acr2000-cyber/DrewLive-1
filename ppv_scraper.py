@@ -1,27 +1,3 @@
-Skip to content
-Navigation Menu
-acr2000-cyber
-DrewLive-1
-
-Code
-Pull requests
-Actions
-Projects
-Wiki
-Security
-DrewLive-1
-/ppv_scraper.py
-acr2000-cyber
-acr2000-cyber
-Update ppv_scraper.py
-a7beaf2
- · 
-yesterday
-373 lines (316 loc) · 13.9 KB
-
-Code
-
-Blame
 import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
@@ -395,4 +371,3 @@ def is_football_stream(name):
 
 if __name__ == "__main__":
     asyncio.run(main())
- 
