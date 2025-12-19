@@ -1,3 +1,27 @@
+Skip to content
+Navigation Menu
+acr2000-cyber
+DrewLive-1
+
+Code
+Pull requests
+Actions
+Projects
+Wiki
+Security
+DrewLive-1
+/ppv_scraper.py
+acr2000-cyber
+acr2000-cyber
+Update ppv_scraper.py
+a7beaf2
+ · 
+yesterday
+373 lines (316 loc) · 13.9 KB
+
+Code
+
+Blame
 import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
@@ -259,15 +283,29 @@ def build_m3u(streams, url_map):
         logo = s.get("poster") or CATEGORY_LOGOS.get(orig_category, "http://drewlive24.duckdns.org:9000/Logos/Default.png")
         tvg_id = CATEGORY_TVG_IDS.get(orig_category, "Misc.Dummy.us")
 
-        # Pick the first available URL - convert set to list first
-        url = list(urls)  # Changed from list(urls) to get first URL
+        if orig_category == "American Football":
+            matched_team = None
+            for team in NFL_TEAMS:
+                if team in name_lower:
+                    tvg_id = "NFL.Dummy.us"
+                    final_group = "PPVLand - NFL Action"
+                    matched_team = team
+                    break
+            if not matched_team:
+                for team in COLLEGE_TEAMS:
+                    if team in name_lower:
+                        tvg_id = "NCAA.Football.Dummy.us"
+                        final_group = "PPVLand - College Football"
+                        matched_team = team
+                        break
+
+        # Pick the first available URL
+        url = next(iter(urls))
 
         # Build the pipe-appended, percent-encoded header params
         try:
             referer = s.get("iframe") or ""
-            from urllib.parse import urlparse
-            parsed = urlparse(referer)
-            origin = f"{parsed.scheme}://{parsed.netloc}" if referer else "https://ppv.to"
+            origin = "https://" + referer.split('/') if referer else "https://ppv.to"
         except Exception:
             origin = "https://ppv.to"
 
@@ -275,11 +313,10 @@ def build_m3u(streams, url_map):
         ref_enc = _encode_param(referer)
         origin_enc = _encode_param(origin)
 
-        # Build param string ONCE
         param_str = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
 
         lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        # Append the single URL with the pipe-encoded header params (Kodi-style) - ONLY ONCE
+        # append the single URL with the pipe-encoded header params (Kodi-style)
         lines.append(f'{url}{param_str}')
     return "\n".join(lines)
 
@@ -349,6 +386,13 @@ async def main():
     playlist = build_m3u(football_streams, url_map)
     with open("SoccerStreams.m3u8", "w", encoding="utf-8") as f:
         f.write(playlist)
+    print(f"✅ Done! Soccer playlist saved as SoccerStreams.m3u8")
+
+def is_football_stream(name):
+    """Check if a stream name contains football-related terms"""
+    football_keywords = ["football", "soccer"]
+    return any(keyword in name.lower() for keyword in football_keywords)
 
 if __name__ == "__main__":
     asyncio.run(main())
+ 
