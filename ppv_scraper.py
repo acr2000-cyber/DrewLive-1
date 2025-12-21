@@ -17,83 +17,25 @@ CUSTOM_HEADERS = [
 DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
 
 ALLOWED_CATEGORIES = {
-    "24/7 Streams", "Wrestling", "Football", "Basketball", "Baseball",
-    "Combat Sports", "American Football", "Darts", "Motorsports", "Ice Hockey",
-    "Miscellaneous"
+    "24/7 Streams", "Football", "Miscellaneous"
 }
 
 CATEGORY_LOGOS = {
     "24/7 Streams": "http://drewlive24.duckdns.org:9000/Logos/247.png",
-    "Wrestling": "http://drewlive24.duckdns.org:9000/Logos/Wrestling.png",
     "Football": "http://drewlive24.duckdns.org:9000/Logos/Football.png",
-    "Basketball": "http://drewlive24.duckdns.org:9000/Logos/Basketball.png",
-    "Baseball": "http://drewlive24.duckdns.org:9000/Logos/Baseball.png",
-    "American Football": "http://drewlive24.duckdns.org:9000/Logos/NFL3.png",
-    "Combat Sports": "http://drewlive24.duckdns.org:9000/Logos/CombatSports2.png",
-    "Live Now": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png",
-    "Ice Hockey": "http://drewlive24.duckdns.org:9000/Logos/Hockey.png",
     "Miscellaneous": "http://drewlive24.duckdns.org:9000/Logos/DrewLiveSports.png"
 }
 
 CATEGORY_TVG_IDS = {
     "24/7 Streams": "24.7.Dummy.us",
-    "Wrestling": "PPV.EVENTS.Dummy.us",
     "Football": "Soccer.Dummy.us",
-    "Basketball": "Basketball.Dummy.us",
-    "Baseball": "MLB.Baseball.Dummy.us",
-    "American Football": "NFL.Dummy.us",
-    "Combat Sports": "PPV.EVENTS.Dummy.us",
-    "Live Now": "24.7.Dummy.us",
-    "Ice Hockey": "NHL.Hockey.Dummy.us",
     "Miscellaneous": "24.7.Dummy.us"
 }
 
 GROUP_RENAME_MAP = {
     "24/7 Streams": "PPVLand - Live Channels 24/7",
-    "Wrestling": "PPVLand - Wrestling Events",
     "Football": "PPVLand - Global Football Streams",
-    "Basketball": "PPVLand - Basketball Hub",
-    "Baseball": "PPVLand - MLB",
-    "American Football": "PPVLand - NFL Action",
-    "Combat Sports": "PPVLand - Combat Sports",
-    "Darts": "PPVLand - Darts",
-    "Motorsports": "PPVLand - Racing Action",
-    "Live Now": "PPVLand - Live Now",
-    "Ice Hockey": "PPVLand - NHL Action",
     "Miscellaneous": "PPVLand - Random Events"
-}
-
-NFL_TEAMS = {
-    "arizona cardinals", "atlanta falcons", "baltimore ravens", "buffalo bills",
-    "carolina panthers", "chicago bears", "cincinnati bengals", "cleveland browns",
-    "dallas cowboys", "denver broncos", "detroit lions", "green bay packers",
-    "houston texans", "indianapolis colts", "jacksonville jaguars", "kansas city chiefs",
-    "las vegas raiders", "los angeles chargers", "los angeles rams", "miami dolphins",
-    "minnesota vikings", "new england patriots", "new orleans saints", "new york giants",
-    "new york jets", "philadelphia eagles", "pittsburgh steelers", "san francisco 49ers",
-    "seattle seahawks", "tampa bay buccaneers", "tennessee titans", "washington commanders"
-}
-
-COLLEGE_TEAMS = {
-    "alabama crimson tide", "auburn tigers", "arkansas razorbacks", "georgia bulldogs",
-    "florida gators", "lsu tigers", "ole miss rebels", "mississippi state bulldogs",
-    "tennessee volunteers", "texas longhorns", "oklahoma sooners", "oklahoma state cowboys",
-    "baylor bears", "tcu horned frogs", "kansas jayhawks", "kansas state wildcats",
-    "iowa state cyclones", "iowa hawkeyes", "michigan wolverines", "ohio state buckeyes",
-    "penn state nittany lions", "michigan state spartans", "wisconsin badgers",
-    "minnesota golden gophers", "illinois fighting illini", "northwestern wildcats",
-    "indiana hoosiers", "notre dame fighting irish", "usc trojans", "ucla bruins",
-    "oregon ducks", "oregon state beavers", "washington huskies", "washington state cougars",
-    "arizona wildcats", "stanford cardinal", "california golden bears", "colorado buffaloes",
-    "florida state seminoles", "miami hurricanes", "clemson tigers", "north carolina tar heels",
-    "duke blue devils", "nc state wolfpack", "wake forest demon deacons", "syracuse orange",
-    "virginia cavaliers", "virginia tech hokies", "louisville cardinals", "pittsburgh panthers",
-    "maryland terrapins", "rutgers scarlet knights", "nebraska cornhuskers", "purdue boilermakers",
-    "texas a&m aggies", "kentucky wildcats", "missouri tigers", "vanderbilt commodores",
-    "houston cougars", "utah utes", "byu cougars", "boise state broncos", "san diego state aztecs",
-    "cincinnati bearcats", "memphis tigers", "ucf knights", "south florida bulls", "smu mustangs",
-    "tulsa golden hurricane", "tulane green wave", "navy midshipmen", "army black knights",
-    "arizona state sun devils", "texas tech red raiders", "florida atlantic owls"
 }
 
 async def grab_m3u8_from_iframe(page, iframe_url):
@@ -317,29 +259,15 @@ def build_m3u(streams, url_map):
         logo = s.get("poster") or CATEGORY_LOGOS.get(orig_category, "http://drewlive24.duckdns.org:9000/Logos/Default.png")
         tvg_id = CATEGORY_TVG_IDS.get(orig_category, "Misc.Dummy.us")
 
-        if orig_category == "American Football":
-            matched_team = None
-            for team in NFL_TEAMS:
-                if team in name_lower:
-                    tvg_id = "NFL.Dummy.us"
-                    final_group = "PPVLand - NFL Action"
-                    matched_team = team
-                    break
-            if not matched_team:
-                for team in COLLEGE_TEAMS:
-                    if team in name_lower:
-                        tvg_id = "NCAA.Football.Dummy.us"
-                        final_group = "PPVLand - College Football"
-                        matched_team = team
-                        break
-
-        # Pick the first available URL
-        url = next(iter(urls))
+        # Pick the first available URL - convert set to list first
+        url = list(urls)  # Changed from list(urls) to get first URL
 
         # Build the pipe-appended, percent-encoded header params
         try:
             referer = s.get("iframe") or ""
-            origin = "https://" + referer.split('/') if referer else "https://ppv.to"
+            from urllib.parse import urlparse
+            parsed = urlparse(referer)
+            origin = f"{parsed.scheme}://{parsed.netloc}" if referer else "https://ppv.to"
         except Exception:
             origin = "https://ppv.to"
 
@@ -347,15 +275,16 @@ def build_m3u(streams, url_map):
         ref_enc = _encode_param(referer)
         origin_enc = _encode_param(origin)
 
+        # Build param string ONCE
         param_str = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
 
         lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        # append the single URL with the pipe-encoded header params (Kodi-style)
+        # Append the single URL with the pipe-encoded header params (Kodi-style) - ONLY ONCE
         lines.append(f'{url}{param_str}')
     return "\n".join(lines)
 
 async def main():
-    print("🚀 Starting Football Stream Fetcher")
+    print("🚀 Starting Soccer Stream Fetcher")
     data = await get_streams()
     if not data or 'streams' not in data:
         print("❌ No valid data received from the API")
@@ -364,7 +293,7 @@ async def main():
         return
 
     # Filter for football-related categories
-    football_categories = ["Football", "Soccer"]
+    football_categories = ["Football"]
     football_streams = []
     
     for category in data.get("streams", []):
@@ -416,16 +345,10 @@ async def main():
         await browser.close()
 
     # Build playlist with football-specific logic
-    print("\n💾 Writing football playlist...")
+    print("\n💾 Writing soccer playlist...")
     playlist = build_m3u(football_streams, url_map)
-    with open("FootballStreams.m3u8", "w", encoding="utf-8") as f:
+    with open("SoccerStreams.m3u8", "w", encoding="utf-8") as f:
         f.write(playlist)
-    print(f"✅ Done! Football playlist saved as FootballStreams.m3u8")
-
-def is_football_stream(name):
-    """Check if a stream name contains football-related terms"""
-    football_keywords = ["football", "soccer"]
-    return any(keyword in name.lower() for keyword in football_keywords)
 
 if __name__ == "__main__":
     asyncio.run(main())
