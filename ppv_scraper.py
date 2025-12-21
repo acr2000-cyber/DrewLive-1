@@ -330,7 +330,7 @@ def build_m3u(streams, url_map):
     return "\n".join(lines)
 
 async def main():
-    print("🚀 Starting Soccer Stream Fetcher")
+    print("🚀 Starting Football Stream Fetcher")
     data = await get_streams()
     if not data or 'streams' not in data:
         print("❌ No valid data received from the API")
@@ -391,11 +391,11 @@ async def main():
         await browser.close()
 
     # Build playlist with football-specific logic
-    print("\n💾 Writing soccer playlist...")
+    print("\n💾 Writing football playlist...")
     playlist = build_m3u(football_streams, url_map)
-    with open("SoccerStreams.m3u8", "w", encoding="utf-8") as f:
+    with open("FootballStreams.m3u8", "w", encoding="utf-8") as f:
         f.write(playlist)
-    print(f"✅ Done! Soccer playlist saved as SoccerStreams.m3u8")
+    print(f"✅ Done! Football playlist saved as FootballStreams.m3u8")
 
 def is_football_stream(name):
     """Check if a stream name contains football-related terms"""
