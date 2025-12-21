@@ -38,6 +38,39 @@ GROUP_RENAME_MAP = {
     "Miscellaneous": "PPVLand - Random Events"
 }
 
+NFL_TEAMS = {
+    "arizona cardinals", "atlanta falcons", "baltimore ravens", "buffalo bills",
+    "carolina panthers", "chicago bears", "cincinnati bengals", "cleveland browns",
+    "dallas cowboys", "denver broncos", "detroit lions", "green bay packers",
+    "houston texans", "indianapolis colts", "jacksonville jaguars", "kansas city chiefs",
+    "las vegas raiders", "los angeles chargers", "los angeles rams", "miami dolphins",
+    "minnesota vikings", "new england patriots", "new orleans saints", "new york giants",
+    "new york jets", "philadelphia eagles", "pittsburgh steelers", "san francisco 49ers",
+    "seattle seahawks", "tampa bay buccaneers", "tennessee titans", "washington commanders"
+}
+
+COLLEGE_TEAMS = {
+    "alabama crimson tide", "auburn tigers", "arkansas razorbacks", "georgia bulldogs",
+    "florida gators", "lsu tigers", "ole miss rebels", "mississippi state bulldogs",
+    "tennessee volunteers", "texas longhorns", "oklahoma sooners", "oklahoma state cowboys",
+    "baylor bears", "tcu horned frogs", "kansas jayhawks", "kansas state wildcats",
+    "iowa state cyclones", "iowa hawkeyes", "michigan wolverines", "ohio state buckeyes",
+    "penn state nittany lions", "michigan state spartans", "wisconsin badgers",
+    "minnesota golden gophers", "illinois fighting illini", "northwestern wildcats",
+    "indiana hoosiers", "notre dame fighting irish", "usc trojans", "ucla bruins",
+    "oregon ducks", "oregon state beavers", "washington huskies", "washington state cougars",
+    "arizona wildcats", "stanford cardinal", "california golden bears", "colorado buffaloes",
+    "florida state seminoles", "miami hurricanes", "clemson tigers", "north carolina tar heels",
+    "duke blue devils", "nc state wolfpack", "wake forest demon deacons", "syracuse orange",
+    "virginia cavaliers", "virginia tech hokies", "louisville cardinals", "pittsburgh panthers",
+    "maryland terrapins", "rutgers scarlet knights", "nebraska cornhuskers", "purdue boilermakers",
+    "texas a&m aggies", "kentucky wildcats", "missouri tigers", "vanderbilt commodores",
+    "houston cougars", "utah utes", "byu cougars", "boise state broncos", "san diego state aztecs",
+    "cincinnati bearcats", "memphis tigers", "ucf knights", "south florida bulls", "smu mustangs",
+    "tulsa golden hurricane", "tulane green wave", "navy midshipmen", "army black knights",
+    "arizona state sun devils", "texas tech red raiders", "florida atlantic owls"
+}
+
 async def grab_m3u8_from_iframe(page, iframe_url):
     found_streams = set()
     
