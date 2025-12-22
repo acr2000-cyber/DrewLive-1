@@ -13,7 +13,7 @@ replacement = '.m3u8|User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win6
 content = re.sub(r'\.m3u8', replacement, content)
 
 # Write the output file
-with open('PPVLand.m3u8', 'w') as file:
+with open('PPVLand_kodi.m3u8', 'w') as file:
     file.write(content)
 
 print("✅ M3U8 file processed successfully")
