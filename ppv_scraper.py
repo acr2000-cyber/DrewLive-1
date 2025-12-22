@@ -406,11 +406,19 @@ async def main():
 
         await browser.close()
 
-    print("\n💾 Writing final playlist to PPVLand.m3u8 ...")
-    playlist = build_m3u(streams, url_map)
-    with open("PPVLand.m3u8", "w", encoding="utf-8") as f:
-        f.write(playlist)
-    print(f"✅ Done! Playlist saved as PPVLand.m3u8 at {datetime.utcnow().isoformat()} UTC")
+    print("\n💾 Writing final playlists...")
+playlist = build_m3u(streams, url_map)
 
+# Write PPVLand.m3u8
+with open("PPVLand.m3u8", "w", encoding="utf-8") as f:
+    f.write(playlist)
+print(f"✅ PPVLand.m3u8 saved at {datetime.utcnow().isoformat()} UTC")
+
+# Write PPVLand_classic.m3u8
+with open("PPVLand_classic.m3u8", "w", encoding="utf-8") as f:
+    f.write(playlist)
+print(f"✅ PPVLand_classic.m3u8 saved at {datetime.utcnow().isoformat()} UTC")
+
+print(f"✅ Done! Both playlists saved successfully.")
 if __name__ == "__main__":
     asyncio.run(main())
