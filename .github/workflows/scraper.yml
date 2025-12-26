@@ -24,7 +24,7 @@ jobs:
           playwright install-deps
       
       - name: Run scraper
-        run: python ppv_scraper.py
+        run: python ppv.py
 
       - name: Upload playlist
         uses: actions/upload-artifact@v4
