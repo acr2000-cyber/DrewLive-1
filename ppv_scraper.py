@@ -452,23 +452,6 @@ async def main():
 
         # Pick the first available URL
         url = next(iter(urls))
-
-        # Build the VLC-compatible header parameters
-        try:
-            referer = s.get("iframe") or ""
-            origin = "https://" + referer.split('/') if referer else "https://ppv.to"
-        except Exception:
-            origin = "https://ppv.to"
-
-        ua_enc = _encode_param(DEFAULT_UA)
-        ref_enc = _encode_param(referer)
-        origin_enc = _encode_param(origin)
-
-        # Create VLC-compatible header parameters
-        vlc_params = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
-
-        vlc_lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        vlc_lines.append(f'{url}{vlc_params}')
     
     with open("PPVLand_vlc.m3u8", "w", encoding="utf-8") as f:
         f.write("\n".join(vlc_lines))
