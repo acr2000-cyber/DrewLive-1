@@ -24,7 +24,7 @@ jobs:
           playwright install-deps
       
       - name: Run scraper
-        run: python ppv_scraper.py
+        run: python ppv.py
       
       - name: Process M3U8 file
         run: python process_m3u8.py
