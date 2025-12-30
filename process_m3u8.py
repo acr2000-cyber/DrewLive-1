@@ -2,7 +2,8 @@ import re
 
 # Read the input file
 with open('PPVLand.m3u8', 'r') as file:
-    content = file.read()import re
+    content = file.read()
+    import re
 from urllib.parse import quote
 
 def convert_m3u8_entry(content):
