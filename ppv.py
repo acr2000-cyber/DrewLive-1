@@ -2,7 +2,11 @@ import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
 from datetime import datetime
-import re 
+import re
+def _encode_param(value):
+    """Encode a parameter value for URL usage."""
+    import urllib.parse
+    return urllib.parse.quote(value, safe='')
 
 API_URL = "https://ppv.to/api/streams"
 
