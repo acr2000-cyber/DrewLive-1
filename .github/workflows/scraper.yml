@@ -26,6 +26,9 @@ jobs:
       - name: Run scraper
         run: python ppv.py
 
+      - name: Convert M3U8 format
+        run: python convert_m3u8.py
+
       - name: Upload playlist
         uses: actions/upload-artifact@v4
         with:
