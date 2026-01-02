@@ -2,17 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import aiohttp
 from datetime import datetime
-import re
-
-# Constants
-DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-# ... other constants
-
-# Helper functions
-def _encode_param(value):
-    """Encode a parameter value for URL usage."""
-    import urllib.parse
-    return urllib.parse.quote(value, safe='')
+import re 
 
 API_URL = "https://ppv.to/api/streams"
 
@@ -281,67 +271,7 @@ def build_m3u(streams, url_map):
         lines.extend(CUSTOM_HEADERS)
         lines.append(url)
     return "\n".join(lines)
-def build_m3u(streams, url_map):
-    """
-    Build M3U formatted output compatible with Kodi-style playlist entries.
-    For each stream we append a single best URL followed by pipe-separated,
-    percent-encoded header params: |User-Agent=...&Referer=...&Origin=...
-    """
-    lines = ['#EXTM3U url-tvg="https://epgshare01.online/epgshare01/epg_ripper_DUMMY_CHANNELS.xml.gz"']
-    seen_names = set()
-    for s in streams:
-        name_lower = s["name"].strip().lower()
-        if name_lower in seen_names:
-            continue
-        seen_names.add(name_lower)
 
-        unique_key = f"{s['name']}::{s['category']}::{s['iframe']}"
-        urls = url_map.get(unique_key, [])
-        if not urls:
-            print(f"⚠️ No working URLs for {s['name']}")
-            continue
-
-        orig_category = s.get("category") or "Misc"
-        final_group = GROUP_RENAME_MAP.get(orig_category, f"PPVLand - {orig_category}")
-        logo = s.get("poster") or CATEGORY_LOGOS.get(orig_category, "http://drewlive24.duckdns.org:9000/Logos/Default.png")
-        tvg_id = CATEGORY_TVG_IDS.get(orig_category, "Misc.Dummy.us")
-
-        if orig_category == "American Football":
-            matched_team = None
-            for team in NFL_TEAMS:
-                if team in name_lower:
-                    tvg_id = "NFL.Dummy.us"
-                    final_group = "PPVLand - NFL Action"
-                    matched_team = team
-                    break
-            if not matched_team:
-                for team in COLLEGE_TEAMS:
-                    if team in name_lower:
-                        tvg_id = "NCAA.Football.Dummy.us"
-                        final_group = "PPVLand - College Football"
-                        matched_team = team
-                        break
-
-        # Pick the first available URL
-        url = next(iter(urls))
-
-        # Build the pipe-appended, percent-encoded header params
-        try:
-            referer = s.get("iframe") or ""
-            origin = "https://" + referer.split('/') if referer else "https://ppv.to"
-        except Exception:
-            origin = "https://ppv.to"
-
-        ua_enc = _encode_param(DEFAULT_UA)
-        ref_enc = _encode_param(referer)
-        origin_enc = _encode_param(origin)
-
-        param_str = f"|User-Agent={ua_enc}&Referer={ref_enc}&Origin={origin_enc}"
-
-        lines.append(f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-logo="{logo}" group-title="{final_group}",{s["name"]}')
-        # append the single URL with the pipe-encoded header params (Kodi-style)
-        lines.append(f'{url}{param_str}')
-    return "\n".join(lines)
 async def main():
     print("🚀 Starting PPV Stream Fetcher")
     data = await get_streams()
