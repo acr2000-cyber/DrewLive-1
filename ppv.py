@@ -3,6 +3,12 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 import aiohttp
 from datetime import datetime
 import re
+
+# Constants
+DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+# ... other constants
+
+# Helper functions
 def _encode_param(value):
     """Encode a parameter value for URL usage."""
     import urllib.parse
