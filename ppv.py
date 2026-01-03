@@ -340,7 +340,7 @@ async def main():
 
     print("\n💾 Writing final playlist to PPVLand.m3u8 ...")
     playlist = build_m3u(streams, url_map)
-    with open("PPVLand.m3u8", "w", encoding="utf-8") as f:
+    with open("PPVLand.m3u8_VLC", "w", encoding="utf-8") as f:
         f.write(playlist)
     print(f"✅ Done! Playlist saved as PPVLand.m3u8 at {datetime.utcnow().isoformat()} UTC")
 
