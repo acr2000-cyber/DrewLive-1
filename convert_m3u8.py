@@ -90,4 +90,4 @@ def convert_m3u8_file(input_file, output_file=None):
 # Example usage
 if __name__ == "__main__":
     # Convert the file (same file for input and output)
-    convert_m3u8_file('PPVLand_VLC.m3u8', 'PPVLand.m3u8')
+    convert_m3u8_file('PPVLand.m3u8', 'PPVLand.m3u8')
