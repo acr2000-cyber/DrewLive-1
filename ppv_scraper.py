@@ -475,7 +475,7 @@ async def main():
     print(f"✅ Done! VLC-compatible playlist saved as PPVLand_vlc.m3u8 at {datetime.utcnow().isoformat()} UTC")
 
 if __name__ == "__main__":
-    asyncio.run(main())}
+    asyncio.run(main())
 
 CATEGORY_TVG_IDS = {
     "24/7 Streams": "24.7.Dummy.us",
