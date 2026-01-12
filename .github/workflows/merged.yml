@@ -2,8 +2,8 @@ name: 🚀 Update Auto Merged Playlist 📺
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # ⏰ Every 10 minutes
-  workflow_dispatch:        # 🔘 Manual trigger
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -58,3 +58,4 @@ jobs:
               exit 1
             }
           fi
+
